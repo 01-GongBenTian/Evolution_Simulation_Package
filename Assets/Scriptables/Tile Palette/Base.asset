@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8bdc7830d58d3645bf87ba513fb4fb0, type: 3}
+  m_Name: Base
+  m_EditorClassIdentifier: 
+  RegisterName:
+  - PlainSoil
+  - SnowSoil
+  - Sand
+  - Ocean
+  RegisterTile:
+  - {fileID: 11400000, guid: 823fa80297a673044b0d1de5295ce329, type: 2}
+  - {fileID: 11400000, guid: 1e5f7eb5b85ee964da7abfb629a465e0, type: 2}
+  - {fileID: 11400000, guid: 1e2bfee74dd0e464ab6c45cea399515b, type: 2}
+  - {fileID: 11400000, guid: ce2f99f401a043e448f5239007995c64, type: 2}

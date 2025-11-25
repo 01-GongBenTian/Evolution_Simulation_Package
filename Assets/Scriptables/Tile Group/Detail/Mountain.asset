@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d469d4aeb311e1e47b3231b80501746f, type: 3}
+  m_Name: Mountain
+  m_EditorClassIdentifier: 
+  Tileset: {fileID: 8636299639853498653, guid: 668bfaf150d13134db94269661bc58d2, type: 3}
+  _Single: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _Center: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _Top: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _InnerTopRight: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _OuterTopRight: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _Right: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _InnerBottomRight: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _OuterBottomRight: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _Bottom: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _InnerBottomLeft: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _OuterBottomLeft: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _Left: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _InnerTopLeft: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
+  _OuterTopLeft: {fileID: 11400000, guid: e63d2192e6362e849ace19b00313dceb, type: 2}
