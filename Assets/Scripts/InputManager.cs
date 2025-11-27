@@ -6,7 +6,10 @@ using UnityEngine.Tilemaps;
 
 public class InputManager : MonoBehaviour
 {
+    public static InputManager Instance;
+
     [SerializeField] private PlayerInput _PlayerInput;
+    private InputAction LeftMouse;
     private InputAction RightMouse;
     private InputAction MouseDelta;
 
@@ -14,14 +17,24 @@ public class InputManager : MonoBehaviour
     public Camera MainCamera;
     [SerializeField] private float CameraDragMultipler;
 
-    private Vector3Int TileSelectedPos;
-    public TileBase SelectBorder;
+    public Vector3Int TileSelectedPos;
+    [SerializeField] private TileBase SelectBorder;
 
     // Start is called before the first frame update
     void Start()
     {
+        if(!Instance)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this);
+            return;
+        }
 
 
+        LeftMouse = _PlayerInput.actions.FindAction("LeftMouse");
         RightMouse = _PlayerInput.actions.FindAction("RightMouse");
         MouseDelta = _PlayerInput.actions.FindAction("MouseDelta");
     }
@@ -41,21 +54,31 @@ public class InputManager : MonoBehaviour
             return;
         }
 
+        UIManager.Instance.HideInfoPanel();
+
         Cursor.visible = false;
 
         Vector3 delta = (MouseDelta.ReadValue<Vector2>());
         MainCamera.transform.position = MainCamera.transform.position - (delta * CameraDragMultipler * Time.deltaTime);
+
+
     }
 
     private void SelectTile()
     {
         Vector3 MouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        TileSelectedPos = WorldMap.Instance.Base.WorldToCell(MouseWorldPos);
-        TileSelectedPos.x /= 2;
-        TileSelectedPos.y /= 2;
-        TileSelectedPos.z = 0;
+        Vector3Int Pos = WorldMap.Instance.Base.WorldToCell(MouseWorldPos);
+        Pos.x /= 2;
+        Pos.y /= 2;
+        Pos.z = 0;
 
         WorldMap.Instance.UI.ClearAllTiles();
-        WorldMap.Instance.UI.SetTile(TileSelectedPos * 2, SelectBorder);
+        WorldMap.Instance.UI.SetTile(Pos * 2, SelectBorder);
+
+        if(LeftMouse.IsPressed())
+        {
+            TileSelectedPos = Pos;
+            UIManager.Instance.ShowInfoPanel();
+        }
     }
 }

@@ -15,6 +15,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "LeftMouse",
+                    "type": "Button",
+                    "id": "5afa560b-4dde-4cc1-8611-5817e60aa1c3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "MouseDelta",
                     "type": "Value",
                     "id": "daba5eb6-1649-4a02-ae89-38fceae771cb",
@@ -44,6 +53,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "MouseDelta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8b1f7743-646a-4181-ab86-c26496faff5a",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftMouse",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

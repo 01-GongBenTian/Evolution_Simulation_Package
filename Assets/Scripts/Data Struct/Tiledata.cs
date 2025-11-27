@@ -12,4 +12,6 @@ public class Tiledata
 
     public float Temperature;
     public float Humidity;
+
+    public Dictionary<Resource, float> ResourceList;
 }

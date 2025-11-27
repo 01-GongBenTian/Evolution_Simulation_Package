@@ -42,6 +42,8 @@ public class WorldMap : MonoBehaviour
     [Range(0.0f, 1.0f)]
     public float MountainHeight;
 
+    //Resource generation parameter
+    public ResourceCategoryList ResCategoryList;
 
     // Start is called before the first frame update
     void Start()
@@ -53,6 +55,7 @@ public class WorldMap : MonoBehaviour
         else
         {
             Destroy(this);
+            return;
         }
 
 
@@ -113,6 +116,10 @@ public class WorldMap : MonoBehaviour
                 MapTiles[i][ii].Altitude = CalculateAltitude(i, ii);
                 MapTiles[i][ii].Temperature = CalculateTemperature(MapTiles[i][ii]);
                 MapTiles[i][ii].Humidity = CalculateHumiditiy(i, ii);
+
+                //distribut resources
+                MapTiles[i][ii].ResourceList = new Dictionary<Resource, float>();
+                MineralDistribution(i, ii);
 
                 //set the tile appearance
                 MapTiles[i][ii].BaseTile = GetBaseTileGroup(MapTiles[i][ii]);
@@ -259,7 +266,7 @@ public class WorldMap : MonoBehaviour
         else
         {
             //Land
-            if (data.Temperature < 0.0f)
+            if (data.Temperature < -20.0f)
             {
                 return BasePalette.GetTile("SnowSoil");
             }
@@ -296,6 +303,95 @@ public class WorldMap : MonoBehaviour
             {
                 return null;
             }
+        }
+    }
+
+
+    public void MineralDistribution(int x, int y)
+    {
+        //surrounding
+        int mountain = 0;
+        int highland = 0;
+        int flat = 0;
+        int ocean = 0;
+
+        for (int i = -2; i < 3; ++i)
+        {
+            if (x + i < 0 || x + i == Width)
+            {
+                continue;
+            }
+
+            for (int ii = -2; ii < 3; ++ii)
+            {
+                if (i == 0 && ii == 0)
+                {
+                    continue;
+                }
+                else if (y + ii < 0 || y + ii == Height)
+                {
+                    continue;
+                }
+
+                float altitude = CalculateAltitude(x + i, y + ii);
+
+                if (altitude > MountainHeight)
+                {
+                    ++mountain;
+                }
+                else if (altitude > HighlandHight)
+                {
+                    ++highland;
+                }
+                else if (altitude > CoastHeight)
+                {
+                    ++flat;
+                }
+                else if (altitude < CoastHeight)
+                {
+                    ++ocean;
+                }
+            }
+        }
+
+
+        if (MapTiles[x][y].Altitude > MountainHeight)
+        {
+            //Level 5
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 4000);
+            
+            //Level 1
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], 8000);
+        }
+        else if (MapTiles[x][y].Altitude > HighlandHight)
+        {
+            //Level 5
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 2000);
+
+            //Level 1
+            int mineralAmount = (2000 + (4000 * mountain) + (500 * highland) - (1000 * flat) - (2000 * ocean));
+            mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], mineralAmount);
+        }
+        else if (MapTiles[x][y].Altitude > CoastHeight)
+        {
+            //Level 5
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 500);
+
+            //Level 1
+            int mineralAmount = (1000 + (4000 * mountain) + (1000 * highland) - (1000 * ocean));
+            mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], mineralAmount);
+        }
+        else if (MapTiles[x][y].Altitude < CoastHeight)
+        {
+            //Level 5
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 4000);
+
+            //Level 1
+            int mineralAmount = (8000 + (2000 * mountain) + (2000 * highland) + (1000 * flat));
+            mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], mineralAmount);
         }
     }
 }

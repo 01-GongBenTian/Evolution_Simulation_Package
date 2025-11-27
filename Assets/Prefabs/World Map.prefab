@@ -69,10 +69,11 @@ MonoBehaviour:
   Width: -1
   Height: -1
   RandomGenerateOffset: 0.5
-  AverageTemperature: 30
+  AverageTemperature: 26
   CoastHeight: 0.55
   HighlandHight: 0.62
-  MountainHeight: 0.75
+  MountainHeight: 0.76
+  ResCategoryList: {fileID: 11400000, guid: a50cba7c8b41cf84e8fe4f221d0b219c, type: 2}
 --- !u!1 &5848863486069075827
 GameObject:
   m_ObjectHideFlags: 0
