@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
 
     //InfoPanel
     [SerializeField] private GameObject _InfoPanel;
+    [SerializeField] public GameObject _SpawnCreatureBtn;
 
     //Geo
     [SerializeField] private ParamInfo _Altitude;
@@ -36,6 +37,7 @@ public class UIManager : MonoBehaviour
 
         _ResourceInfos = new List<ParamInfo>();
         _InfoPanel.SetActive(false);
+        _SpawnCreatureBtn.SetActive(false);
     }
 
     public void ShowInfoPanel()
@@ -61,6 +63,7 @@ public class UIManager : MonoBehaviour
 
 
         _InfoPanel.SetActive(true);
+        _SpawnCreatureBtn.SetActive(true);
     }
 
     public void HideInfoPanel()
@@ -76,5 +79,6 @@ public class UIManager : MonoBehaviour
 
 
         _InfoPanel.SetActive(false);
+        _SpawnCreatureBtn.SetActive(false);
     }
 }

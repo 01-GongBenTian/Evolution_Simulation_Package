@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class GenesCode
 {
     public enum Taxonomy
@@ -18,21 +19,21 @@ public class GenesCode
     }
 
     private static readonly int[] EXP_REQUIREMENTS = { 2187, 729, 243, 81, 27, 9, 3, 1};
-
     public static int[] CODE_COUNT = new int[(int)Taxonomy.NUM_OF_TAXONOMY] {1, 1, 1, 1, 1, 1, 1, 1};
 
-    public int[] Code = new int[(int)Taxonomy.NUM_OF_TAXONOMY];
+    public int[] Code;
 
     public int EvoEXP = 0;
 
-    public GenesCode Evolute (GenesCode oldCode)
+    public GenesCode Evolute()
     {
         GenesCode newCode = new GenesCode();
+        newCode.Code = new int[(int)Taxonomy.NUM_OF_TAXONOMY];
 
-        newCode.EvoEXP += oldCode.EvoEXP + 1;
+        newCode.EvoEXP += this.EvoEXP + 1;
         for (int i = 0; i < (int)Taxonomy.NUM_OF_TAXONOMY; ++i)
         {
-            if ((newCode.EvoEXP / EXP_REQUIREMENTS[i]) > (oldCode.EvoEXP / EXP_REQUIREMENTS[i]))
+            if ((newCode.EvoEXP / EXP_REQUIREMENTS[i]) > (this.EvoEXP / EXP_REQUIREMENTS[i]))
             {
                 for(int ii = i; ii < (int)Taxonomy.NUM_OF_TAXONOMY; ++ii)
                 {
@@ -42,7 +43,7 @@ public class GenesCode
                 break;
             }
 
-            newCode.Code[i] = oldCode.Code[i];
+            newCode.Code[i] = this.Code[i];
         }
 
         return newCode;
@@ -59,5 +60,14 @@ public class GenesCode
             Code[(int)Taxonomy.GENUS],
             Code[(int)Taxonomy.SPECIES],
             Code[(int)Taxonomy.SUB_SPECIES]);
+    }
+
+    public Color GetCodeColor()
+    {
+        float r = (Code[0] * Code[4] * Code[3]) % 256 / 255f;
+        float g = (Code[1] * Code[5] * Code[7]) % 256 / 255f;
+        float b = (Code[2] * Code[6] * Code[3] * Code[7]) % 256 / 255f;
+
+        return new Color(r, g, b);
     }
 }

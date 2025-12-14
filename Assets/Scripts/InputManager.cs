@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
@@ -75,10 +76,19 @@ public class InputManager : MonoBehaviour
         WorldMap.Instance.UI.ClearAllTiles();
         WorldMap.Instance.UI.SetTile(Pos * 2, SelectBorder);
 
-        if(LeftMouse.IsPressed())
+        if (
+            LeftMouse.IsPressed() && 
+            !EventSystem.current.IsPointerOverGameObject() && 
+            Within(Pos.x, 0, WorldMap.Instance.Width) &&
+            Within(Pos.y, 0, WorldMap.Instance.Height))
         {
             TileSelectedPos = Pos;
             UIManager.Instance.ShowInfoPanel();
         }
+    }
+
+    private bool Within(int value, int Min, int Max)
+    {
+        return (Max > value) && (value >= Min);
     }
 }
