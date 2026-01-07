@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +11,23 @@ public class CreatureManager : MonoBehaviour
 {
     public static CreatureManager INSTANCE;
 
+    public Dictionary<uint, CreatureGroup> CreatureGroups;
+
     public GameObject CreatureGroupPrefab;
-    public Dictionary<int, CreatureGroup> CreatureGroups;
 
     public ResourceCategoryList ResourceList;
 
     [Range(0, 1)]
     public float EvoluteChance;
+
+    [Range(1, 10)]
+    public float TemperatureTolerance;
+
+    [Range(1, 200)]
+    public float HumidityTolerance;
+
+    [Range(0.5f, 1)]
+    public float ReproducePower;
 
     public void Start()
     {
@@ -30,36 +41,22 @@ public class CreatureManager : MonoBehaviour
             Destroy(this);
         }
 
-        CreatureGroups = new Dictionary<int, CreatureGroup>();
+        CreatureGroups = new Dictionary<uint, CreatureGroup>();
     }
 
     public void OnNewTurn()
     {
-        //Reproduce
-        Reproduction();
-
         //Consume resources
         ConsumeResource();
 
-        //Despose reources
+        //Activity
+        Activity();
 
-        //Decrese lifespan
+        //Reproduce
+        Reproduction();
 
         //Population adjust
         PopulationAdjustment();
-    }
-
-    public void Reproduction()
-    {
-        if (CreatureGroups.Count <= 0)
-            return;
-
-        int[] groupIndexs = CreatureGroups.Keys.ToArray<int>();
-
-        foreach(int index in groupIndexs)
-        {
-            CreatureGroups[index].OnReproduction();
-        }
     }
 
     public void ConsumeResource()
@@ -67,142 +64,98 @@ public class CreatureManager : MonoBehaviour
         if (CreatureGroups.Count <= 0)
             return;
 
-        //CreatureGroup group;
-        //int[] groupIndexs = CreatureGroups.Keys.ToArray<int>();
-
-        //Dictionary<CreatureData, int> creatures;
-        //CreatureData[] creatureTypes;
-
-        //foreach (int index in groupIndexs)
-        //{
-        //    group = CreatureGroups[index];
-        //    creatures = group.Creatures;
-        //    creatureTypes = group.Creatures.Keys.ToArray();
-
-        //    Vector3Int pos = WorldMap.Instance.Base.WorldToCell(group.transform.position);
-        //    pos /= 2;
-
-        //    foreach (CreatureData creatureType in creatureTypes)
-        //    {
-        //        //WorldMap.Instance.MapTiles[pos.x][pos.y].ResourceList[WorldMap.Instance.ResCategoryList.FindResourceCategory("Mineral")].;
-        //    }
-        //}
+        uint[] groupIndexes = CreatureGroups.Keys.ToArray();
+        foreach (uint index in groupIndexes)
+        {
+            CreatureGroups[index].OnConsumeResources();
+        }
     }
 
+    public void Activity()
+    {
+        if (CreatureGroups.Count <= 0)
+            return;
+
+        uint[] groupIndexs = CreatureGroups.Keys.ToArray();
+        foreach(uint index in groupIndexs)
+        {
+            CreatureGroups[index].OnActivity();
+        }
+    }
+
+    public void Reproduction()
+    {
+        if (CreatureGroups.Count <= 0)
+            return;
+
+        Debug.Log("==================================================================================");
+        uint[] groupIndexes = CreatureGroups.Keys.ToArray<uint>();
+        foreach(uint index in groupIndexes)
+        {
+            CreatureGroups[index].OnReproduction();
+        }
+    }
 
     public void PopulationAdjustment()
     {
         if (CreatureGroups.Count <= 0)
             return;
 
-        int[] groupIndexs = CreatureGroups.Keys.ToArray<int>();
+        uint[] groupIndexs = CreatureGroups.Keys.ToArray<uint>();
 
-        foreach (int index in groupIndexs)
+        foreach (uint index in groupIndexs)
         {
             CreatureGroups[index].OnPopulationAdjustment();
         }
-
-        //CreatureGroup group;
-        //int[] groupIndexs = CreatureGroups.Keys.ToArray<int>();
-
-        //Dictionary<CreatureData, int> creatures;
-
-
-
-        //int totalPopulation = 0;
-        //List<CreatureData> creatureOrderInPopulationSize = new List<CreatureData>();
-
-        //foreach (int index in groupIndexs)
-        //{
-        //    group = CreatureGroups[index];
-
-        //    totalPopulation = group.TotalPopulation();
-        //    group.UpdateLeader();
-
-
-
-        //    creatures = group.Creatures;
-
-        //    creatureTypes = creatures.Keys.ToArray<CreatureData>();
-
-        //    totalPopulation = creatures[creatureTypes[0]];
-        //    creatureOrderInPopulationSize.Clear();
-        //    creatureOrderInPopulationSize.Add(creatureTypes[0]);
-
-        //    //get the total population of the creature group
-        //    for (int ii = 1; ii < creatureTypes.Count(); ++ii)
-        //    {
-        //        totalPopulation += creatures[creatureTypes[ii]];
-        //        for(int iii = 0; iii < creatureOrderInPopulationSize.Count; ++iii)
-        //        {
-        //            if (creatures[creatureOrderInPopulationSize[iii]] > creatures[creatureTypes[ii]])
-        //            {
-        //                creatureOrderInPopulationSize.Insert(iii, creatureTypes[ii]);
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    //output creature group information
-        //    string groupInformation = string.Format("Creature Index: {0}\n Total population: {1}\n", index, totalPopulation);
-        //    for(int ii = 0; ii < creatureOrderInPopulationSize.Count; ++ii)
-        //    {
-        //        groupInformation += string.Format("{0}: {1}\n", creatureOrderInPopulationSize[ii].Code.GetCode(), creatures[creatureOrderInPopulationSize[ii]]);
-        //    }
-        //    Debug.Log(groupInformation);
-
-
-        //    group.LeaderCreature = creatureOrderInPopulationSize[creatureOrderInPopulationSize.Count - 1];
-        //    while (group.TotalPopulation() > (group.LeaderCreature.GroupLimit + group.LeaderCreature.GroupFloor))
-        //    {
-        //        //CreatureGroup newGroup = SpawnCreature();
-        //        //int exceedNum = totalPopulation - group.LeaderCreature.GroupLimit;
-
-        //        //for(int i = 0; i < creatureOrderInPopulationSize.Count; ++i)
-        //        //{
-        //        //    //population is not enough
-        //        //    if(creatures[creatureOrderInPopulationSize[i]] < creatureOrderInPopulationSize[i].GroupFloor)
-        //        //    {
-        //        //        newGroup.Creatures.Add(creatureOrderInPopulationSize[i], creatures[creatureOrderInPopulationSize[i]]);
-        //        //        creatures.Remove(creatureOrderInPopulationSize[i]);
-
-        //        //    }
-        //        //    else
-        //        //    {
-
-        //        //    }
-
-
-        //        //}
-
-        //        ////for()
-
-        //        Debug.Log("Group " + index + " is Oversize");
-        //        break;
-        //    }
-        //}
     }
 
-    public CreatureGroup SpawnCreature()
+    public CreatureGroup CreateNewCreatureGroup()
     {
-        GameObject newCreature = Instantiate(CreatureGroupPrefab, WorldMap.Instance.transform);
+        //create game object
+        GameObject newCreature = Instantiate(CreatureGroupPrefab, WorldMap.INSTANCE.transform);
         CreatureGroup group = newCreature.GetComponent<CreatureGroup>();
-        group.Index = CreatureGroup.COUNT++;
-        group.Creatures = new Dictionary<CreatureData, int>();
 
+        //set the index of the creature group
+        group.Index = CreatureGroup.COUNT++;
+
+        //set the canvas camera
+        group.Canvas.worldCamera = Camera.main;
+
+        //initialize the creature list
+        group.Creatures = new Dictionary<CreatureData, int>();
+        group.ResourcesCarried = new Dictionary<Resource, int>();
+
+        group.CreatureLifes = new Dictionary<CreatureData, int>();
+        group.Energy = 0;
+
+        //add this group to creature group list
         CreatureGroups.Add(group.Index, group);
+
         return group;
     }
 
     public void SpawnDefaultCreature()
     {
-        CreatureGroup group = SpawnCreature();
-        group.Creatures.Add(CreatureData.DEFAULT_CREATURE, 1);
+        CreatureGroup group = CreateNewCreatureGroup();
 
+        //add in the creature into the creature list of the group
+        group.AddInCreature(CreatureData.DefaultCreature, 1);
+
+        //update the leader of the creature group
         group.UpdateLeader();
-        group.CreatureSprite.color = group.LeaderCreature.Code.GetCodeColor();
-        group.MapPosition = InputManager.Instance.TileSelectedPos;
+        group.UpdateSpriteSize();
 
-        group.gameObject.transform.localPosition = WorldMap.Instance.Base.CellToLocal((InputManager.Instance.TileSelectedPos * 2) + new Vector3Int(1, 1, 0));
+        //update the position of the creature group
+        group.MapPosition = InputManager.INSTANCE.TileSelectedPos;
+        group.gameObject.transform.localPosition = WorldMap.INSTANCE.Base.CellToLocal((InputManager.INSTANCE.TileSelectedPos * 2) + new Vector3Int(1, 1, 0));
+    }
+
+    public void RemoveCreatureGroup(uint index)
+    {
+        CreatureGroup group = CreatureGroups[index];
+        CreatureGroups.Remove(index);
+
+        group.CodeLabel.text = "Dead";
+        group.transform.DOScale(Vector3.zero, 0.5f).OnComplete(() => { Destroy(group.gameObject); });
     }
 }

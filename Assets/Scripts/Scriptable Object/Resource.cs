@@ -15,10 +15,16 @@ public class Resource : ScriptableObject
         NUM_OF_LEVEL
     }
 
+    [SerializeReference]
+    public Resource UpperLevel;
+
+    [SerializeReference]
+    public Resource LowerLevel;
+
     public ResourceCategory Category;
     public ResourceLevel Level;
 
-    public float EnergyProvide;
-    public float EnergyToBreak;
+    public int EnergyProvide;
+    public int EnergyToBreak;
     public float TimeToUpgrade;
 }

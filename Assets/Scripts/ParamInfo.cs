@@ -8,6 +8,7 @@ public class ParamInfo : MonoBehaviour
     [SerializeField] private Text _Label;
     [SerializeField] private Text _Value;
 
+    public int asd;
     public void SetLabel(string label)
     {
         _Label.text = label + ':';
@@ -16,5 +17,10 @@ public class ParamInfo : MonoBehaviour
     public void SetValue(float value)
     {
         _Value.text = value.ToString("N2");
+    }
+
+    public void SetValue(int value)
+    {
+        _Value.text = value.ToString();
     }
 }

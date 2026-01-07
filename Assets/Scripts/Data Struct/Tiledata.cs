@@ -8,10 +8,11 @@ public class Tiledata
     public TileGroup BaseTile;
     public TileGroup DetailTile;
 
+    public float Latitude;
     public float Altitude;
 
     public float Temperature;
     public float Humidity;
 
-    public Dictionary<Resource, float> ResourceList;
+    public Dictionary<Resource, int> ResourceList;
 }

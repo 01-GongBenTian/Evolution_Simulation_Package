@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class WorldMap : MonoBehaviour
 {
-    public static WorldMap Instance;
+    public static WorldMap INSTANCE;
 
     public Tilemap Base;
     public Tilemap Detail;
@@ -14,8 +14,8 @@ public class WorldMap : MonoBehaviour
     public TilePalette BasePalette;
     public TilePalette DetailPalette;
 
-    public const int MIN_WIDTH_MAP = 50;
-    public const int MIN_HEIGHT_MAP = 25;
+    public const int MIN_WIDTH_MAP = 30;
+    public const int MIN_HEIGHT_MAP = 10;
     public const int MAX_WIDTH_MAP = 150;
     public const int MAX_HEIGHT_MAP = 75;
 
@@ -44,12 +44,18 @@ public class WorldMap : MonoBehaviour
     //Resource generation parameter
     public ResourceCategoryList ResCategoryList;
 
+    public Bound TilemapBound;
+
     // Start is called before the first frame update
     void Start()
     {
-        if (Instance == null)
+        Base.ClearAllTiles();
+        Detail.ClearAllTiles();
+        UI.ClearAllTiles();
+
+        if (INSTANCE == null)
         {
-            Instance = this;
+            INSTANCE = this;
         }
         else
         {
@@ -60,43 +66,47 @@ public class WorldMap : MonoBehaviour
 
         CheckMapSize();
         GenerateMap();
+        
+        Base.CompressBounds();
+        Bounds tilemapBound = Base.localBounds;
+
+        TilemapBound = new Bound();
+        TilemapBound.Min = Base.transform.TransformPoint(tilemapBound.min);
+        TilemapBound.Max = Base.transform.TransformPoint(tilemapBound.max);
+        TilemapBound.Width = TilemapBound.Max.x - TilemapBound.Min.x;
+        TilemapBound.Height = TilemapBound.Max.y - TilemapBound.Min.y;
+
     }
 
     private void CheckMapSize()
     {
-        if (!HeightMap)
+        //check and restrict the custom map size
+        if (Width < MIN_WIDTH_MAP)
         {
-            //check and restrict the custom map size
-            if (Width < MIN_WIDTH_MAP)
-            {
-                Width = MIN_WIDTH_MAP;
-            }
-            else if (Width > MIN_WIDTH_MAP)
-            {
-                Width = MAX_WIDTH_MAP;
-            }
-
-            if (Height < MIN_HEIGHT_MAP)
-            {
-                Height = MIN_HEIGHT_MAP;
-            }
-            else if (Height > MAX_HEIGHT_MAP)
-            {
-                Height = MAX_HEIGHT_MAP;
-            }
+            Width = MIN_WIDTH_MAP;
         }
-        else
+        else if (Width > MIN_WIDTH_MAP)
         {
-            if (HeightMap.width > MAX_WIDTH_MAP)
-            {
-                Width = MAX_WIDTH_MAP;
-                Height = (int)(HeightMap.height * ((float)MAX_WIDTH_MAP / HeightMap.width));
-            }
-            else
-            {
-                Width = HeightMap.width;
-                Height = HeightMap.height;
-            }
+            Width = MAX_WIDTH_MAP;
+        }
+
+        if (Height < MIN_HEIGHT_MAP)
+        {
+            Height = MIN_HEIGHT_MAP;
+        }
+        else if (Height > MAX_HEIGHT_MAP)
+        {
+            Height = MAX_HEIGHT_MAP;
+        }
+
+        if (Width > HeightMap.width)
+        {
+            Width = HeightMap.width;
+        }
+        
+        if (Height > HeightMap.height)
+        {
+            Height = HeightMap.height;
         }
     }
 
@@ -112,12 +122,13 @@ public class WorldMap : MonoBehaviour
             {
                 //set the tile data
                 MapTiles[i].Add(new Tiledata());
+                MapTiles[i][ii].Latitude = 180.0f * (ii / (float)Height) - 90.0f;
                 MapTiles[i][ii].Altitude = CalculateAltitude(i, ii);
                 MapTiles[i][ii].Temperature = CalculateTemperature(MapTiles[i][ii]);
                 MapTiles[i][ii].Humidity = CalculateHumiditiy(i, ii);
 
                 //distribut resources
-                MapTiles[i][ii].ResourceList = new Dictionary<Resource, float>();
+                MapTiles[i][ii].ResourceList = new Dictionary<Resource, int>();
                 MineralDistribution(i, ii);
 
                 //set the tile appearance
@@ -225,10 +236,10 @@ public class WorldMap : MonoBehaviour
     {
         if(data.Altitude < CoastHeight)
         {
-            return AverageTemperature;
+            return AverageTemperature - (0.7f * Mathf.Abs(data.Latitude));
         }
 
-        return AverageTemperature - (57.6f * ((data.Altitude - CoastHeight + 0.04f) / (1.0f - CoastHeight))); 
+        return AverageTemperature - (57.6f * ((data.Altitude - CoastHeight + 0.04f) / (1.0f - CoastHeight))) - (0.7f * Mathf.Abs(data.Latitude)); 
     }
 
 
@@ -360,7 +371,7 @@ public class WorldMap : MonoBehaviour
             MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 4000);
             
             //Level 1
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], 8000);
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], 8000);
         }
         else if (MapTiles[x][y].Altitude > HighlandHight)
         {
@@ -370,7 +381,7 @@ public class WorldMap : MonoBehaviour
             //Level 1
             int mineralAmount = (2000 + (4000 * mountain) + (500 * highland) - (1000 * flat) - (2000 * ocean));
             mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], mineralAmount);
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], mineralAmount);
         }
         else if (MapTiles[x][y].Altitude > CoastHeight)
         {
@@ -380,7 +391,7 @@ public class WorldMap : MonoBehaviour
             //Level 1
             int mineralAmount = (1000 + (4000 * mountain) + (1000 * highland) - (1000 * ocean));
             mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], mineralAmount);
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], mineralAmount);
         }
         else if (MapTiles[x][y].Altitude < CoastHeight)
         {
@@ -390,7 +401,7 @@ public class WorldMap : MonoBehaviour
             //Level 1
             int mineralAmount = (8000 + (2000 * mountain) + (2000 * highland) + (1000 * flat));
             mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_1], mineralAmount);
+            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], mineralAmount);
         }
     }
 }

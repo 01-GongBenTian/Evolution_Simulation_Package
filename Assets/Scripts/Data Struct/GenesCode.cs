@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
 public class GenesCode
 {
     public enum Taxonomy
@@ -18,17 +17,17 @@ public class GenesCode
         NUM_OF_TAXONOMY
     }
 
-    private static readonly int[] EXP_REQUIREMENTS = { 2187, 729, 243, 81, 27, 9, 3, 1};
-    public static int[] CODE_COUNT = new int[(int)Taxonomy.NUM_OF_TAXONOMY] {1, 1, 1, 1, 1, 1, 1, 1};
+    private static readonly uint[] EXP_REQUIREMENTS = { 2187, 729, 243, 81, 27, 9, 3, 1};
+    public static uint[] CODE_COUNT = new uint[(int)Taxonomy.NUM_OF_TAXONOMY] {1, 1, 1, 1, 1, 1, 1, 1};
 
-    public int[] Code;
+    public uint[] Code;
 
-    public int EvoEXP = 0;
+    public uint EvoEXP = 0;
 
     public GenesCode Evolute()
     {
         GenesCode newCode = new GenesCode();
-        newCode.Code = new int[(int)Taxonomy.NUM_OF_TAXONOMY];
+        newCode.Code = new uint[(int)Taxonomy.NUM_OF_TAXONOMY];
 
         newCode.EvoEXP += this.EvoEXP + 1;
         for (int i = 0; i < (int)Taxonomy.NUM_OF_TAXONOMY; ++i)
@@ -69,5 +68,10 @@ public class GenesCode
         float b = (Code[2] * Code[6] * Code[3] * Code[7]) % 256 / 255f;
 
         return new Color(r, g, b);
+    }
+
+    public bool IsSameSpecies(GenesCode other)
+    {
+        return other.Code[(int)Taxonomy.SPECIES] == Code[(int)Taxonomy.SPECIES];
     }
 }
