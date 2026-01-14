@@ -12,10 +12,8 @@ public class CreatureManager : MonoBehaviour
     public static CreatureManager INSTANCE;
 
     public Dictionary<uint, CreatureGroup> CreatureGroups;
-
     public GameObject CreatureGroupPrefab;
 
-    public ResourceCategoryList ResourceList;
 
     [Range(0, 1)]
     public float EvoluteChance;
@@ -88,7 +86,6 @@ public class CreatureManager : MonoBehaviour
         if (CreatureGroups.Count <= 0)
             return;
 
-        Debug.Log("==================================================================================");
         uint[] groupIndexes = CreatureGroups.Keys.ToArray<uint>();
         foreach(uint index in groupIndexes)
         {

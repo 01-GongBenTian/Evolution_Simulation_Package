@@ -10,10 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c21614a9801b6444a510627eb90541f, type: 3}
-  m_Name: Mineral
+  m_Name: Resource List
   m_EditorClassIdentifier: 
-  Name: Mineral
-  List:
+  _List:
   - {fileID: 11400000, guid: da689e6f144c0054898707a996cc592b, type: 2}
   - {fileID: 11400000, guid: 44f6bfef2422d97478e33ff9279cf636, type: 2}
   - {fileID: 11400000, guid: ef38a65a3e07dcf4cb8b7c599efc0961, type: 2}

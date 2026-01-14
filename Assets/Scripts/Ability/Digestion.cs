@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Analytics;
-using static Resource.ResourceLevel;
+using static Resource;
 
 public abstract class Digestion : Ability
 {
@@ -86,7 +86,7 @@ public class FilterFeed : Digestion
                 break;
 
 
-            if (resource.Key.Level == LEVEL_1 || resource.Value == 0)
+            if (resource.Key.Level == ResourceLevel.LEVEL_1 || resource.Value == 0)
                 continue;
 
 
@@ -126,7 +126,7 @@ public class FilterFeed : Digestion
 
             switch (resource.Key.Level)
             {
-                case LEVEL_2:
+                case ResourceLevel.LEVEL_2:
                     {
                         digestNum = Mathf.Clamp(resource.Value, 1, totalToDigest);
 
@@ -134,67 +134,49 @@ public class FilterFeed : Digestion
                         int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.5f);
                         group.Energy += energy;
 
-                        if (!group.ResourcesCarried.ContainsKey(resource.Key.LowerLevel))
-                        {
-                            group.ResourcesCarried.Add(resource.Key.LowerLevel, 0);
-                        }
 
-                        //return the digested product
-                        group.ResourcesCarried[resource.Key.LowerLevel] += digestNum * 2;
-                        group.ResourcesCarried[resource.Key] = 0;
-
-                        break;
+                        goto default;
                     }
-                case LEVEL_3:
-                    {
-                        //calulcate the energy get from the resources
-                        digestNum = Mathf.Clamp(resource.Value / 2, 1, totalToDigest);
-                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.25f);
-                        group.Energy += energy;
-
-                        if (!group.ResourcesCarried.ContainsKey(resource.Key.LowerLevel))
-                        {
-                            group.ResourcesCarried.Add(resource.Key.LowerLevel, 0);
-                        }
-
-                        //return the digested product
-                        group.ResourcesCarried[resource.Key.LowerLevel] += digestNum * 2;
-                        group.ResourcesCarried[resource.Key] -= digestNum;
-
-                        break;
-                    }
-                case LEVEL_4:
+                case ResourceLevel.LEVEL_3:
                     {
                         //calulcate the energy get from the resources
                         digestNum = Mathf.Clamp(resource.Value / 4, 1, totalToDigest);
-                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.125f);
+                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.15f);
                         group.Energy += energy;
 
-                        if (!group.ResourcesCarried.ContainsKey(resource.Key.LowerLevel))
-                        {
-                            group.ResourcesCarried.Add(resource.Key.LowerLevel, 0);
-                        }
 
-                        //return the digested product
-                        group.ResourcesCarried[resource.Key.LowerLevel] += digestNum * 2;
-                        group.ResourcesCarried[resource.Key] -= digestNum;
-
-                        break;
+                        goto default;
                     }
-                case LEVEL_5:
+                case ResourceLevel.LEVEL_4:
                     {
                         //calulcate the energy get from the resources
                         digestNum = Mathf.Clamp(resource.Value / 8, 1, totalToDigest);
-                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.0625f);
+                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.05f);
                         group.Energy += energy;
 
-                        if (!group.ResourcesCarried.ContainsKey(resource.Key.LowerLevel))
+
+                        goto default;
+                    }
+                case ResourceLevel.LEVEL_5:
+                    {
+                        //calulcate the energy get from the resources
+                        digestNum = Mathf.Clamp(resource.Value / 16, 1, totalToDigest);
+                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.02f);
+                        group.Energy += energy;
+
+
+                        goto default;
+                    }
+                default: 
+                    {
+                        Resource lowerLevel = ResourceList.GetInstance().GetResource(resource.Key.Category, resource.Key.Level - 1);
+                        if (!group.ResourcesCarried.ContainsKey(lowerLevel))
                         {
-                            group.ResourcesCarried.Add(resource.Key.LowerLevel, 0);
+                            group.ResourcesCarried.Add(lowerLevel, 0);
                         }
 
                         //return the digested product
-                        group.ResourcesCarried[resource.Key.LowerLevel] += digestNum * 2;
+                        group.ResourcesCarried[lowerLevel] += digestNum * 2;
                         group.ResourcesCarried[resource.Key] -= digestNum;
 
                         break;
@@ -232,28 +214,24 @@ public class FilterFeed : Digestion
 
             switch(kvp.Key.Level)
             {
-                case LEVEL_2:
+                case ResourceLevel.LEVEL_2:
                     {
                         weight += kvp.Value;
                         break;
                     }
-                case LEVEL_3:
+                case ResourceLevel.LEVEL_3:
                     {
-                        weight += kvp.Value / 2.0f;
+                        weight += kvp.Value / 5.7f;
                         break;
                     }
-                case LEVEL_4:
-                    {
-                        weight += kvp.Value / 5.0f;
-                        break;
-                    }
-                case LEVEL_5:
+                case ResourceLevel.LEVEL_4:
                     {
                         weight += kvp.Value / 13.0f;
                         break;
                     }
-                default:
+                case ResourceLevel.LEVEL_5:
                     {
+                        weight += kvp.Value / 30.0f;
                         break;
                     }
             }

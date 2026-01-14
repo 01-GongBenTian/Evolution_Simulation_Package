@@ -82,7 +82,6 @@ public class CreatureGroup : MonoBehaviour
 
     public void OnReproduction()
     {
-        Debug.Log(Energy);
         float totalWeight = 0;
         float[] weights = new float[Creatures.Count];
         CreatureData[] creatures = Creatures.Keys.ToArray();
@@ -111,64 +110,12 @@ public class CreatureGroup : MonoBehaviour
         }
 
         Energy = energyLefted;
-        Debug.Log(Energy);
     }
 
 
 
     public void OnPopulationAdjustment()
     {
-        //Debug.Log($"=== 开始种群调整 ===");
-        //Debug.Log($"生物数量: {Creatures.Count}");
-
-        //// 检查最大值、最小值、总和
-        //if (Creatures.Any())
-        //{
-        //    int max = Creatures.Max(c => c.Value);
-        //    int min = Creatures.Min(c => c.Value);
-        //    long longSum = Creatures.Sum(c => (long)c.Value);
-
-        //    Debug.Log($"属性最大值: {max}");
-        //    Debug.Log($"属性最小值: {min}");
-        //    Debug.Log($"使用long计算的总和: {longSum}");
-        //    Debug.Log($"int.MaxValue: {int.MaxValue}");
-        //    Debug.Log($"int.MinValue: {int.MinValue}");
-
-        //    // 检查是否溢出
-        //    if (longSum > int.MaxValue)
-        //        Debug.LogError($"总和 {longSum} > int.MaxValue");
-        //    if (longSum < int.MinValue)
-        //        Debug.LogError($"总和 {longSum} < int.MinValue");
-        //}
-
-        //try
-        //{
-        //    // 你的原始代码
-        //    int population = Creatures.Sum(kvp => kvp.Value);
-        //    while (population > LeaderCreature.GroupMax)
-        //    {
-        //        CreatureGroup newGroup = SplitGroup(ref population);
-        //        newGroup.MapPosition = MapPosition;
-        //        newGroup.gameObject.transform.position = WorldMap.INSTANCE.Base.CellToLocal(newGroup.MapPosition * 2 + new Vector3Int(1, 1, 0));
-
-        //        newGroup.UpdateLeader();
-        //        newGroup.UpdateSpriteSize();
-        //    }
-
-        //    UpdateLeader();
-        //    UpdateSpriteSize();
-        //}
-        //catch (OverflowException ex)
-        //{
-        //    Debug.LogError($"溢出异常详情: {ex}");
-
-        //    // 检查每个值
-        //    foreach (var creature in Creatures)
-        //    {
-        //        Debug.Log($"生物: ID={creature.Key}, 属性值={creature.Value}");
-        //    }
-        //}
-
         int population = Creatures.Sum(kvp => kvp.Value);
         while (population > LeaderCreature.GroupMax)
         {

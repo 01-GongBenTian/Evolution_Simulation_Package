@@ -1473,7 +1473,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CreatureGroupPrefab: {fileID: 4376294170535806888, guid: ce8c2a262f66208458607c6e007ca996, type: 3}
-  ResourceList: {fileID: 11400000, guid: a50cba7c8b41cf84e8fe4f221d0b219c, type: 2}
   EvoluteChance: 1
   TemperatureTolerance: 3
   HumidityTolerance: 80

@@ -1,7 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static Resource;
 
 public class WorldMap : MonoBehaviour
 {
@@ -40,9 +40,6 @@ public class WorldMap : MonoBehaviour
 
     [Range(0.0f, 1.0f)]
     public float MountainHeight;
-
-    //Resource generation parameter
-    public ResourceCategoryList ResCategoryList;
 
     public Bound TilemapBound;
 
@@ -296,6 +293,7 @@ public class WorldMap : MonoBehaviour
         if (data.Altitude < CoastHeight)
         {
             //Water
+            data.Altitude = 0.0f;
             return null;
         }
         else
@@ -365,43 +363,147 @@ public class WorldMap : MonoBehaviour
         }
 
 
+        List<Resource> minerals = ResourceList.GetInstance().GetResources(Categories.MINERAL);
         if (MapTiles[x][y].Altitude > MountainHeight)
         {
             //Level 5
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 4000);
+            MapTiles[x][y].ResourceList.Add(minerals[4], 4000);
             
-            //Level 1
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], 8000);
+            //Level 2
+            MapTiles[x][y].ResourceList.Add(minerals[1], 8000);
         }
         else if (MapTiles[x][y].Altitude > HighlandHight)
         {
             //Level 5
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 2000);
+            MapTiles[x][y].ResourceList.Add(minerals[4], 2000);
 
-            //Level 1
+            //Level 2
             int mineralAmount = (2000 + (4000 * mountain) + (500 * highland) - (1000 * flat) - (2000 * ocean));
             mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], mineralAmount);
+            MapTiles[x][y].ResourceList.Add(minerals[1], mineralAmount);
         }
         else if (MapTiles[x][y].Altitude > CoastHeight)
         {
             //Level 5
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 500);
+            MapTiles[x][y].ResourceList.Add(minerals[4], 500);
 
-            //Level 1
+            //Level 2
             int mineralAmount = (1000 + (4000 * mountain) + (1000 * highland) - (1000 * ocean));
             mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], mineralAmount);
+            MapTiles[x][y].ResourceList.Add(minerals[1], mineralAmount);
         }
         else if (MapTiles[x][y].Altitude < CoastHeight)
         {
             //Level 5
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_5], 4000);
+            MapTiles[x][y].ResourceList.Add(minerals[4], 4000);
 
-            //Level 1
+            //Level 2
             int mineralAmount = (8000 + (2000 * mountain) + (2000 * highland) + (1000 * flat));
             mineralAmount = mineralAmount < 0 ? 0 : mineralAmount;
-            MapTiles[x][y].ResourceList.Add(ResCategoryList.FindResourceCategory("Mineral").List[(int)Resource.ResourceLevel.LEVEL_2], mineralAmount);
+            MapTiles[x][y].ResourceList.Add(minerals[1], mineralAmount);
+        }
+    }
+
+
+    public void DynamicResource()
+    {
+        for(int x = 0; x < Width; ++x)
+        {
+            for(int y = 0; y < Height; ++y)
+            {
+                //resources flow
+                ResourceFlow(x, y);
+
+                //resources combination
+                ResourceCombination(x, y);
+            }
+        }
+
+
+
+    }
+
+    public void ResourceCombination(int x, int y)
+    {
+        Tiledata tile = MapTiles[x][y];
+
+        if (tile.Temperature <= 0)
+            return;
+
+        float energyGain = tile.Temperature * 1000;
+
+        List<Resource> minerals = ResourceList.GetInstance().GetResources(Categories.MINERAL);
+        int combineToNextLevel = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            if (!tile.ResourceList.ContainsKey(minerals[i]))
+                continue;
+
+            combineToNextLevel = (int)Mathf.Clamp(Mathf.Pow(energyGain / ((minerals[i + 1].EnergyProvide - (minerals[i].EnergyProvide * 2)) * 10), 1.0f - ((float)i / 30.0f)), 0, tile.ResourceList[minerals[i]] / 2);
+
+            if (!tile.ResourceList.ContainsKey(minerals[i + 1]))
+                tile.ResourceList.Add(minerals[i + 1], 0);
+
+            tile.ResourceList[minerals[i]] -= combineToNextLevel * 2;
+            tile.ResourceList[minerals[i + 1]] += combineToNextLevel;
+        }
+    }
+
+
+    public void ResourceFlow(int x, int y)
+    {
+        List<Resource> minerals = ResourceList.GetInstance().GetResources(Categories.MINERAL);
+        
+        if (!MapTiles[x][y].ResourceList.ContainsKey(minerals[0]))
+            return; ;
+
+        int totalValue = 0;
+        float totalUnit = 0;
+        float oldRatio = 1.0f;
+        float newRatio = 1.0f;
+        float targetRatio = 1.0f;
+        int flowAmount = 0;
+
+        for (int i = -1; i < 2; ++i)
+        {
+            if((x + i) < 0 || (x + i) >= Width)
+                continue;
+
+            for(int ii = -1; ii < 2; ++ii)
+            {
+                if ((y + ii) < 0 || (y + ii) >= Height)
+                    continue;
+
+                if (!MapTiles[x + i][y + ii].ResourceList.ContainsKey(minerals[0]))
+                    continue;
+
+                //calculate the target ratio base on altitude
+                targetRatio = ((MapTiles[x][y].Altitude - MapTiles[x + i][y + ii].Altitude) / 0.05f) - 1.0f;
+
+                //if the ratio is smaller than -1.0f, means the (x, y) is lower than (x + i, y + ii). Skip
+                if (targetRatio < -1.0f)
+                    continue;
+
+                targetRatio = Mathf.Clamp(targetRatio, 1.0f, 5.0f);
+
+                //calculate old ratio
+                if (MapTiles[x + i][y + ii].ResourceList[minerals[0]] == 0)
+                    oldRatio = (float)MapTiles[x][y].ResourceList[minerals[0]];
+                else
+                    oldRatio = (float)MapTiles[x][y].ResourceList[minerals[0]] / (float)MapTiles[x + i][y + ii].ResourceList[minerals[0]];
+
+                if (oldRatio < targetRatio && !Mathf.Approximately(targetRatio,1.0f))
+                    continue;
+
+                newRatio = Mathf.Lerp(oldRatio, 1.0f / targetRatio, Time.deltaTime);
+                
+                totalUnit = (1.0f / newRatio) + 1;
+                totalValue = MapTiles[x][y].ResourceList[minerals[0]] + MapTiles[x + i][y + ii].ResourceList[minerals[0]];
+
+                flowAmount = MapTiles[x][y].ResourceList[minerals[0]] - (int)(totalValue / totalUnit);
+                MapTiles[x][y].ResourceList[minerals[0]] -= flowAmount;
+                MapTiles[x + i][y + ii].ResourceList[minerals[0]] += flowAmount;
+            }
         }
     }
 }

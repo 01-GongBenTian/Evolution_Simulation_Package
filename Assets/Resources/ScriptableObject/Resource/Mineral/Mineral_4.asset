@@ -10,12 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd1279c9179ac3546b18dc7e9aa7f7b3, type: 3}
-  m_Name: Mineral_3
+  m_Name: Mineral_4
   m_EditorClassIdentifier: 
-  UpperLevel: {fileID: 11400000, guid: 532b21819f63ab5479bb9e3e39dca287, type: 2}
-  LowerLevel: {fileID: 11400000, guid: 44f6bfef2422d97478e33ff9279cf636, type: 2}
-  Category: {fileID: 11400000, guid: c1ce5fef7f819a348949445ae7b6041a, type: 2}
-  Level: 2
-  EnergyProvide: 30
-  EnergyToBreak: 30
-  TimeToUpgrade: 0
+  Category: 0
+  Level: 3
+  EnergyProvide: 180

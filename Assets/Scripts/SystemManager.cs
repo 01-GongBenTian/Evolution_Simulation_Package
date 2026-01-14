@@ -30,10 +30,8 @@ public class SystemManager : MonoBehaviour
         Timer += Time.fixedDeltaTime;
         if(Timer >= TimerCount)
         {
-            //Debug.Log("New Turn");
-            //COUNT = 0;
+            WorldMap.INSTANCE.DynamicResource();
             CreatureManager.INSTANCE.OnNewTurn();
-            //Debug.Log(COUNT);
 
             Timer = 0;
         }

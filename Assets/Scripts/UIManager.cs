@@ -59,12 +59,12 @@ public class UIManager : MonoBehaviour
         _Temperature.SetValue(WorldMap.INSTANCE.MapTiles[x][y].Temperature);
         _Humidtiy.SetValue(WorldMap.INSTANCE.MapTiles[x][y].Humidity);
 
-        KeyValuePair<Resource, int>[] kvps = WorldMap.INSTANCE.MapTiles[x][y].ResourceList.OrderBy(kvp => kvp.Key.Category.name).ThenBy(kvp => kvp.Key.Level).ToArray();
+        KeyValuePair<Resource, int>[] kvps = WorldMap.INSTANCE.MapTiles[x][y].ResourceList.OrderBy(kvp => kvp.Key.Category).ThenBy(kvp => kvp.Key.Level).ToArray();
 
         foreach (var kvp in kvps)
         {
             _ResourceInfos.Add(GameObject.Instantiate(_ParamInfo, _ResourcesPanel.transform).GetComponent<ParamInfo>());
-            _ResourceInfos[_ResourceInfos.Count - 1].SetLabel(kvp.Key.Category.Name + " - " + "Level " + ((int)kvp.Key.Level + 1));
+            _ResourceInfos[_ResourceInfos.Count - 1].SetLabel(kvp.Key.Category + " - " + "Level " + ((int)kvp.Key.Level + 1));
             _ResourceInfos[_ResourceInfos.Count - 1].SetValue(kvp.Value);
         }
 
@@ -103,7 +103,7 @@ public class UIManager : MonoBehaviour
         int x = InputManager.INSTANCE.TileSelectedPos.x;
         int y = InputManager.INSTANCE.TileSelectedPos.y;
 
-        KeyValuePair<Resource, int>[] kvps = WorldMap.INSTANCE.MapTiles[x][y].ResourceList.OrderBy(kvp => kvp.Key.Category.name).ThenBy(kvp => kvp.Key.Level).ToArray();
+        KeyValuePair<Resource, int>[] kvps = WorldMap.INSTANCE.MapTiles[x][y].ResourceList.OrderBy(kvp => kvp.Key.Category).ThenBy(kvp => kvp.Key.Level).ToArray();
 
         int count = 0;
         foreach (var kvp in kvps)
@@ -113,7 +113,7 @@ public class UIManager : MonoBehaviour
                 _ResourceInfos.Add(GameObject.Instantiate(_ParamInfo, _ResourcesPanel.transform).GetComponent<ParamInfo>());
             }
 
-            _ResourceInfos[count].SetLabel(kvp.Key.Category.Name + " - " + "Level " + ((int)kvp.Key.Level + 1));
+            _ResourceInfos[count].SetLabel(kvp.Key.Category + " - " + "Level " + ((int)kvp.Key.Level + 1));
             _ResourceInfos[count].SetValue(kvp.Value);
             ++count;
         }

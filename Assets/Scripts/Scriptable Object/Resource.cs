@@ -5,7 +5,13 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Reource", menuName = "Scriptable/Reource")]
 public class Resource : ScriptableObject
 {
-    public enum ResourceLevel
+    public enum Categories : byte
+    {
+        MINERAL = 0,
+        NUM_OF_CATEGORIES
+    }
+    
+    public enum ResourceLevel : byte
     {
         LEVEL_1 = 0,
         LEVEL_2,
@@ -15,16 +21,8 @@ public class Resource : ScriptableObject
         NUM_OF_LEVEL
     }
 
-    [SerializeReference]
-    public Resource UpperLevel;
-
-    [SerializeReference]
-    public Resource LowerLevel;
-
-    public ResourceCategory Category;
+    public Categories Category;
     public ResourceLevel Level;
 
     public int EnergyProvide;
-    public int EnergyToBreak;
-    public float TimeToUpgrade;
 }
