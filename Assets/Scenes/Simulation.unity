@@ -2400,16 +2400,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8016286152271654030, guid: d2d78d4f1f7490c4aaec8ee8ee79d671, type: 3}
       propertyPath: Width
-      value: 30
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 8016286152271654030, guid: d2d78d4f1f7490c4aaec8ee8ee79d671, type: 3}
       propertyPath: Height
-      value: 10
+      value: 75
       objectReference: {fileID: 0}
     - target: {fileID: 8016286152271654030, guid: d2d78d4f1f7490c4aaec8ee8ee79d671, type: 3}
       propertyPath: HeightMap
       value: 
-      objectReference: {fileID: 2800000, guid: a6b35dee7d66b3e46a3bb911b9e3ee25, type: 3}
+      objectReference: {fileID: 2800000, guid: fc7016a5a6838a940859bc311298b3cd, type: 3}
     - target: {fileID: 8016286152271654030, guid: d2d78d4f1f7490c4aaec8ee8ee79d671, type: 3}
       propertyPath: CoastHeight
       value: 0.15

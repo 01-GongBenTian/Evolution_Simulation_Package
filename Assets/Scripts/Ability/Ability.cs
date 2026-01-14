@@ -9,6 +9,8 @@ public abstract class Ability
     {
         REPRODUCTION = 1,
         DIGESTION = REPRODUCTION + 1,
+        STATS = DIGESTION + 1,
+        SPECIAL = STATS + 1,
     }
 
     public AbilityType Type;
