@@ -115,9 +115,6 @@ public class CreatureManager : MonoBehaviour
         //set the index of the creature group
         group.Index = CreatureGroup.COUNT++;
 
-        //set the canvas camera
-        group.Canvas.worldCamera = Camera.main;
-
         //initialize the creature list
         group.Creatures = new Dictionary<CreatureData, int>();
         group.ResourcesCarried = new Dictionary<Resource, int>();
@@ -140,7 +137,7 @@ public class CreatureManager : MonoBehaviour
 
         //update the leader of the creature group
         group.UpdateLeader();
-        group.UpdateSpriteSize();
+        //group.UpdateSpriteSize();
 
         //update the position of the creature group
         group.MapPosition = InputManager.INSTANCE.TileSelectedPos;
@@ -152,7 +149,6 @@ public class CreatureManager : MonoBehaviour
         CreatureGroup group = CreatureGroups[index];
         CreatureGroups.Remove(index);
 
-        group.CodeLabel.text = "Dead";
         group.transform.DOScale(Vector3.zero, 0.5f).OnComplete(() => { Destroy(group.gameObject); });
     }
 }

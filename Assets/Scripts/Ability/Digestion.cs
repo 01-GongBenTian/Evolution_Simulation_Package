@@ -161,7 +161,7 @@ public class FilterFeed : Digestion
                     {
                         //calulcate the energy get from the resources
                         digestNum = Mathf.Clamp(resource.Value / 16, 1, totalToDigest);
-                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.02f);
+                        int energy = (int)(resource.Key.EnergyProvide * digestNum * 0.2f);
                         group.Energy += energy;
 
 

@@ -11,8 +11,8 @@ public class InputManager : MonoBehaviour
 {
     public static InputManager INSTANCE;
 
-    private const float MAX_CAMERA_ZOOM = 36.0f;
-    private const float MIN_CAMERA_ZOOM = 8.0f;
+    private const float MAX_CAMERA_ZOOM = 44.0f;
+    private const float MIN_CAMERA_ZOOM = 4.0f;
 
     [SerializeField] private PlayerInput _PlayerInput;
     private InputAction LeftMouse;

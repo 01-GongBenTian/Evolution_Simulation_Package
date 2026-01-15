@@ -14,6 +14,17 @@ using static AbilityList.ABILITIES;
 
 public class CreatureGroup : MonoBehaviour
 {
+    [Flags]
+    public enum Status
+    { 
+        NONE = 0,
+        HOT = 1,
+        COLD = 2,
+        DRY = 4,
+        HUNGRY = 8
+    }
+
+
     private const float MIN_SCALE = 0.5f;
     private const float SCALE_RANGE = 1.0f;
 
@@ -26,12 +37,13 @@ public class CreatureGroup : MonoBehaviour
 
     public SpriteRenderer Sprite;
 
-    public Canvas Canvas;
-    public Text CodeLabel;
-
     public float Energy;
     public Dictionary<CreatureData, int> CreatureLifes;
     public Dictionary<Resource, int> ResourcesCarried;
+
+    [SerializeField] private CreatureStatusIcon _StatusIcon;
+    [SerializeField] private Status _Status;
+
 
     public void OnConsumeResources()
     {
@@ -124,11 +136,12 @@ public class CreatureGroup : MonoBehaviour
             newGroup.gameObject.transform.position = transform.position;
 
             newGroup.UpdateLeader();
-            newGroup.UpdateSpriteSize();
+            //newGroup.UpdateSpriteSize();
         }
 
         UpdateLeader();
-        UpdateSpriteSize();
+        //UpdateSpriteSize();
+        _StatusIcon.UpdateStatusIcon(_Status);
     }
 
     public CreatureGroup SplitGroup(ref int population)
@@ -197,7 +210,6 @@ public class CreatureGroup : MonoBehaviour
         LeaderCreature = largestPopulation.Key;
 
         Sprite.color = LeaderCreature.Code.GetCodeColor();
-        CodeLabel.text = LeaderCreature.Code.GetCode();
     }
 
     public void AddInCreature(CreatureData creature, int num)
@@ -220,16 +232,28 @@ public class CreatureGroup : MonoBehaviour
 
         if (temperature > creature.HighestTemperatureAccept)
         {
+            _Status |= Status.HOT;
+            _Status &= ~Status.COLD;
+
             multipler *= Mathf.Clamp(((temperature - creature.HighestTemperatureAccept) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
         }
         else if (temperature < creature.LowestTemperatureAccept)
         {
+            _Status |= Status.COLD;
+            _Status &= ~Status.HOT;
+
             multipler *= Mathf.Clamp(((creature.LowestTemperatureAccept - temperature) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
         }
 
         if(humidity > 0 && humidity < creature.HumidityRequired)
         {
+            _Status |= Status.DRY;
+
             multipler *= Mathf.Clamp(((creature.HumidityRequired - humidity) / CreatureManager.INSTANCE.HumidityTolerance), 1.0f, 3.0f);
+        }
+        else
+        {
+            _Status &= ~Status.DRY;
         }
 
         return multipler;
@@ -243,16 +267,33 @@ public class CreatureGroup : MonoBehaviour
 
         if (temperature > creature.HighestTemperatureAccept)
         {
+            _Status |= Status.HOT;
+            _Status &= ~Status.COLD;
+
             multipler *= Mathf.Clamp(((temperature - creature.HighestTemperatureAccept) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
         }
         else if (temperature < creature.LowestTemperatureAccept)
         {
+            _Status |= Status.COLD;
+            _Status &= ~Status.HOT;
+
             multipler *= Mathf.Clamp(((creature.LowestTemperatureAccept - temperature) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
+        }
+        else
+        {
+            _Status &= ~Status.COLD;
+            _Status &= ~Status.HOT;
         }
 
         if (humidity > 0 && humidity < creature.HumidityRequired)
         {
+            _Status |= Status.DRY;
+
             multipler *= Mathf.Clamp(((creature.HumidityRequired - humidity) / CreatureManager.INSTANCE.HumidityTolerance), 1.0f, 3.0f);
+        }
+        else
+        {
+            _Status &= ~Status.DRY;
         }
 
         return multipler;
