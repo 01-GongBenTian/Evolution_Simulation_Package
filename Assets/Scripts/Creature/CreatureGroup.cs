@@ -42,8 +42,9 @@ public class CreatureGroup : MonoBehaviour
     public Dictionary<Resource, int> ResourcesCarried;
 
     [SerializeField] private CreatureStatusIcon _StatusIcon;
-    [SerializeField] private Status _Status;
+    private Status _Status;
 
+    [SerializeField] private Bar _PopulationBar;
 
     public void OnConsumeResources()
     {
@@ -102,7 +103,7 @@ public class CreatureGroup : MonoBehaviour
         int index = 0;
         foreach (var creature in creatures)
         {
-            weights[index] = creature.ResourceCarryNum * creature.GetDigestionAbility().EnergyWeight * Mathf.Pow(Creatures[creature], 0.6f);
+            weights[index] = creature.ResourceCarryNum * creature.GetDigestionAbility().GetEnergyWeight() * Mathf.Pow(Creatures[creature], 0.6f);
             totalWeight += weights[index];
 
             ++index;
@@ -136,12 +137,12 @@ public class CreatureGroup : MonoBehaviour
             newGroup.gameObject.transform.position = transform.position;
 
             newGroup.UpdateLeader();
-            //newGroup.UpdateSpriteSize();
+            newGroup.UpdateDisplay();
         }
 
         UpdateLeader();
-        //UpdateSpriteSize();
-        _StatusIcon.UpdateStatusIcon(_Status);
+        UpdateDisplay();
+        
     }
 
     public CreatureGroup SplitGroup(ref int population)
@@ -190,16 +191,31 @@ public class CreatureGroup : MonoBehaviour
         return newGroup;
     }
 
-    public void UpdateSpriteSize()
+    public void UpdateDisplay()
     {
         //calculate the size according to population size
         int population = Creatures.Sum(kvp => kvp.Value);
-        float scale = Mathf.Clamp((float)(population - LeaderCreature.GroupMin) / (float)(LeaderCreature.GroupMax - LeaderCreature.GroupMin), 0.0f, 1.0f);
+        //float scale = Mathf.Clamp((float)(population - LeaderCreature.GroupMin) / (float)(LeaderCreature.GroupMax - LeaderCreature.GroupMin), 0.0f, 1.0f);
 
-        //apply do animation on scale changes
-        Sprite.transform.DOScale(
-            new Vector3(MIN_SCALE + (SCALE_RANGE * scale), MIN_SCALE + (SCALE_RANGE * scale), MIN_SCALE + (SCALE_RANGE * scale)), 
-            SystemManager.INSTANCE.TimerCount);
+        ////apply do animation on scale changes
+        //Sprite.transform.DOScale(
+        //    new Vector3(MIN_SCALE + (SCALE_RANGE * scale), MIN_SCALE + (SCALE_RANGE * scale), MIN_SCALE + (SCALE_RANGE * scale)), 
+        //    SystemManager.INSTANCE.TimerCount);
+
+        //update population bar
+        if (population < LeaderCreature.GroupMin)
+        {
+            _PopulationBar.ChangeColor(Color.red);
+        }
+        else
+        {
+            _PopulationBar.ChangeColor(Color.yellow);
+        }
+        _PopulationBar.UpdateBar(Mathf.Clamp((float)population / (float)LeaderCreature.GroupMax, 0.0f, 1.0f));
+
+
+        //status icon
+        _StatusIcon.UpdateStatusIcon(_Status);
     }
 
 
@@ -243,6 +259,11 @@ public class CreatureGroup : MonoBehaviour
             _Status &= ~Status.HOT;
 
             multipler *= Mathf.Clamp(((creature.LowestTemperatureAccept - temperature) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
+        }
+        else
+        {
+            _Status &= ~Status.COLD;
+            _Status &= ~Status.HOT;
         }
 
         if(humidity > 0 && humidity < creature.HumidityRequired)
@@ -301,8 +322,8 @@ public class CreatureGroup : MonoBehaviour
 
     private float ResourceWeight(Vector3Int pos)
     {
-        int index = (int)LeaderCreature.AbilityCarried.Find(i => AbilityList.INSTANCE.Abilities[(int)i].Type == Ability.AbilityType.DIGESTION);
-        Digestion dig = (Digestion)AbilityList.INSTANCE.Abilities[index];
+        int index = (int)LeaderCreature.AbilityCarried.Find(i => AbilityList.GetInstance().Abilities[(int)i].GetAbilityType() == Ability.AbilityType.DIGESTION);
+        Digestion dig = (Digestion)AbilityList.GetInstance().Abilities[index];
 
         return dig.ResourcesWeight(pos);
     }
@@ -389,7 +410,6 @@ public class CreatureGroup : MonoBehaviour
 
         Vector3 direciton = WorldMap.INSTANCE.Base.CellToWorld(new Vector3Int(MapPosition.x * 2 + highestX, MapPosition.y * 2 + highestY, 0)) - transform.position;
         direciton.Normalize();
-
 
         return direciton;
     }

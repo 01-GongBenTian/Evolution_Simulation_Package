@@ -137,7 +137,7 @@ public class CreatureManager : MonoBehaviour
 
         //update the leader of the creature group
         group.UpdateLeader();
-        //group.UpdateSpriteSize();
+        group.UpdateDisplay();
 
         //update the position of the creature group
         group.MapPosition = InputManager.INSTANCE.TileSelectedPos;

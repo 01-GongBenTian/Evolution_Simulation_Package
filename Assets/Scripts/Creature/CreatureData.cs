@@ -18,7 +18,7 @@ public class CreatureData
         HighestTemperatureAccept = 30,
         LowestTemperatureAccept = 24,
 
-        AbilityCarried = new List<ABILITIES>() { ABILITIES.MONO_REPRODUCE, ABILITIES.FILTER_FEED },
+        AbilityCarried = new List<ABILITIES>() { ABILITIES.MITOSIS, ABILITIES.FILTER_FEED },
 
         Attack = 1,
         Defenence = 1,
@@ -157,11 +157,11 @@ public class CreatureData
 
     public Digestion GetDigestionAbility()
     {
-        return (Digestion)AbilityList.INSTANCE.Abilities[(int)AbilityCarried.Find(i => AbilityList.INSTANCE.Abilities[(int)i].Type == Ability.AbilityType.DIGESTION)];
+        return (Digestion)AbilityList.GetInstance().Abilities[(int)AbilityCarried.Find(i => AbilityList.GetInstance().Abilities[(int)i].GetAbilityType() == Ability.AbilityType.DIGESTION)];
     }
 
     public Reproduction GetReproductionAbitity()
     {
-        return (Reproduction)AbilityList.INSTANCE.Abilities[(int)AbilityCarried.Find(i => AbilityList.INSTANCE.Abilities[(int)i].Type == Ability.AbilityType.REPRODUCTION)];
+        return (Reproduction)AbilityList.GetInstance().Abilities[(int)AbilityCarried.Find(i => AbilityList.GetInstance().Abilities[(int)i].GetAbilityType() == Ability.AbilityType.REPRODUCTION)];
     }
 }

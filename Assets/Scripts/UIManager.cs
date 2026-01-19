@@ -25,6 +25,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject _ResourcesPanel;
     private List<ParamInfo> _ResourceInfos;
 
+    public PopoutUIManager PopoutUI;
+    public CreatureGroupDataDisplay GroupDisplay;
+
+    public delegate void VoidEvent();
+    public VoidEvent OnUpdate;
+
     void Start()
     {
         if (!INSTANCE)
@@ -40,11 +46,16 @@ public class UIManager : MonoBehaviour
         _ResourceInfos = new List<ParamInfo>();
         _InfoPanel.SetActive(false);
         _SpawnCreatureBtn.SetActive(false);
+
+        GroupDisplay.Deactivate();
     }
 
     private void Update()
     {
         UpdateInfoPanel();
+
+        if (OnUpdate != null)
+            OnUpdate.Invoke();
     }
 
     public void ShowInfoPanel()
@@ -93,6 +104,11 @@ public class UIManager : MonoBehaviour
 
             infoPanelRect.anchoredPosition = new Vector2(700, 0);
         }
+    }
+
+    public void ShowCreatureGroupData()
+    {
+
     }
 
     private void UpdateInfoPanel()

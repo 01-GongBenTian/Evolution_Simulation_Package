@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,20 +6,25 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
-
-
 public class InputManager : MonoBehaviour
 {
+    public enum InputMode 
+    {
+        MAP = 0,
+        CREATURE
+    }
+
+
     public static InputManager INSTANCE;
 
     private const float MAX_CAMERA_ZOOM = 44.0f;
     private const float MIN_CAMERA_ZOOM = 4.0f;
 
     [SerializeField] private PlayerInput _PlayerInput;
-    private InputAction LeftMouse;
-    private InputAction RightMouse;
-    private InputAction MouseDelta;
-    private InputAction MouseScroll;
+    private InputAction _LeftMouse;
+    private InputAction _RightMouse;
+    private InputAction _MouseDelta;
+    private InputAction _MouseScroll;
 
     [SerializeField] private float CameraDragMultipler;
     [SerializeField] private float CameraZoomMultipler;
@@ -26,7 +32,12 @@ public class InputManager : MonoBehaviour
     public Vector3Int TileSelectedPos;
     [SerializeField] private TileBase SelectBorder;
 
+    private GameObject _CreatureSelected;
+    [SerializeField] private bool _TrackingCreature = false;
+
     public Bound CameraBound;
+
+    private InputMode _CurrentMode;
 
     // Start is called before the first frame update
     void Start()
@@ -42,36 +53,41 @@ public class InputManager : MonoBehaviour
         }
 
 
-        LeftMouse = _PlayerInput.actions.FindAction("LeftMouse");
-        RightMouse = _PlayerInput.actions.FindAction("RightMouse");
-        MouseDelta = _PlayerInput.actions.FindAction("MouseDelta");
-        MouseScroll = _PlayerInput.actions.FindAction("MouseScroll");
+        _LeftMouse = _PlayerInput.actions.FindAction("LeftMouse");
+        _RightMouse = _PlayerInput.actions.FindAction("RightMouse");
+        _MouseDelta = _PlayerInput.actions.FindAction("MouseDelta");
+        _MouseScroll = _PlayerInput.actions.FindAction("MouseScroll");
 
         //calculate camera bound
         CameraBound = new Bound();
         UpdateCameraBound();
+
+        _CurrentMode = InputMode.MAP;
     }
 
     // Update is called once per frame
     void Update()
     {
         CameraMove();
+        CameraTrackCreature();
         CameraZoom();
         UpdateCameraBound();
         ClampCamera();
 
         SelectTile();
+        SelectCreature();
     }
 
     private void CameraZoom()
     {
-        Vector2 scrollDelta = MouseScroll.ReadValue<Vector2>();
+        Vector2 scrollDelta = _MouseScroll.ReadValue<Vector2>();
         Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - (scrollDelta.y * CameraZoomMultipler), MIN_CAMERA_ZOOM, MAX_CAMERA_ZOOM);
     }
 
     private void CameraMove()
     {
-        if (!RightMouse.IsPressed())
+        if (!_RightMouse.IsPressed() || 
+            (_CurrentMode == InputMode.CREATURE && _TrackingCreature && _CreatureSelected))
         {
             Cursor.visible = true;
             return;
@@ -81,23 +97,91 @@ public class InputManager : MonoBehaviour
 
         Cursor.visible = false;
 
-        Vector3 delta = (MouseDelta.ReadValue<Vector2>());
+        Vector3 delta = (_MouseDelta.ReadValue<Vector2>());
         Camera.main.transform.position = Camera.main.transform.position - (delta * CameraDragMultipler);
+    }
+
+    private void CameraTrackCreature()
+    {
+        if (_CurrentMode != InputMode.CREATURE || !_CreatureSelected)
+        {
+            if (_TrackingCreature)
+                _TrackingCreature = false;
+
+            return;
+        }
+
+        if (_RightMouse.IsPressed())
+        {
+            _TrackingCreature = false;
+            UIManager.INSTANCE.GroupDisplay.Deactivate();
+        }
+
+        if (_LeftMouse.IsPressed())
+        {
+            _TrackingCreature = true;
+            UIManager.INSTANCE.GroupDisplay.Activate(_CreatureSelected.GetComponent<CreatureGroup>());
+        }
+
+        if (!_TrackingCreature)
+            return;
+
+        Camera.main.transform.position = new Vector3(_CreatureSelected.transform.position.x, _CreatureSelected.transform.position.y, Camera.main.transform.position.z);
+    }
+
+    private void SelectCreature()
+    {
+        //if not in creature select mode return
+        if (_CurrentMode != InputMode.CREATURE || _TrackingCreature)
+            return;
+
+        //use circle overlap to find the creatures under mouse
+        Vector3 MouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(MouseWorldPos, 0.01f, LayerMask.GetMask("Creature"));
+
+        //if no creature is found clear the selected creature and return
+        if (colliders.Length == 0)
+        {
+            if (_CreatureSelected)
+            {
+                _CreatureSelected.GetComponent<CreatureHover>().OnHoverExit();
+                _CreatureSelected = null;
+            }
+
+            return;
+        }
+
+        //if the creature found is same as the selected creature, return
+        if (_CreatureSelected == colliders[0].gameObject)
+        {
+            return;
+        }
+
+        //old selected creature exit hover
+        if (_CreatureSelected)
+            _CreatureSelected.GetComponent<CreatureHover>().OnHoverExit();
+
+        //set new selected creature and enter hover
+        _CreatureSelected = colliders[0].gameObject;
+        _CreatureSelected.GetComponent<CreatureHover>().OnHoverEnter();
     }
 
     private void SelectTile()
     {
+        WorldMap.INSTANCE.UI.ClearAllTiles();
+
+        if (_CurrentMode != InputMode.MAP)
+            return;
+
         Vector3 MouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector3Int Pos = WorldMap.INSTANCE.Base.WorldToCell(MouseWorldPos);
         Pos.x /= 2;
         Pos.y /= 2;
         Pos.z = 0;
 
-        WorldMap.INSTANCE.UI.ClearAllTiles();
-
         if ((Within(Pos.x, 0, WorldMap.INSTANCE.Width) &&
             Within(Pos.y, 0, WorldMap.INSTANCE.Height)) &&
-            !RightMouse.IsPressed() &&
+            !_RightMouse.IsPressed() &&
             !UIManager.INSTANCE.IsInfoPanelShowing()
             )
         {
@@ -109,7 +193,7 @@ public class InputManager : MonoBehaviour
         }
 
         if (
-            LeftMouse.IsPressed() &&
+            _LeftMouse.IsPressed() &&
             !EventSystem.current.IsPointerOverGameObject() &&
             Within(Pos.x, 0, WorldMap.INSTANCE.Width) &&
             Within(Pos.y, 0, WorldMap.INSTANCE.Height))
@@ -181,5 +265,10 @@ public class InputManager : MonoBehaviour
             Camera.main.transform.position -= new Vector3(0, offset, 0);
             UpdateCameraBound();
         }
+    }
+
+    public void SetInputMode(int mode)
+    {
+        _CurrentMode = (InputMode)mode;
     }
 }
