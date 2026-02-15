@@ -9,7 +9,7 @@ public abstract class Ability : ScriptableObject
     {
         NONE = 0,
         REPRODUCTION = NONE + 1,
-        DIGESTION = REPRODUCTION + 1,
+        DIGESTION = REPRODUCTION + 2,
         STATS = DIGESTION + 1,
         SPECIAL = STATS + 1,
     }
@@ -17,6 +17,9 @@ public abstract class Ability : ScriptableObject
     public string NameDisplay;
     public Sprite Icon;
 
+    public List<Ability> UpgradePossibility;
+
     public abstract void Execute(object param0, object param1, object param2);
     public abstract AbilityType GetAbilityType();
+    public abstract AbilityList.ABILITIES GetABILITIES();
 }

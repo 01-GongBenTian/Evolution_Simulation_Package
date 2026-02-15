@@ -26,12 +26,14 @@ public class UIManager : MonoBehaviour
     private List<ParamInfo> _ResourceInfos;
 
     public PopoutUIManager PopoutUI;
-    public CreatureGroupDataDisplay GroupDisplay;
+    public CreatureGroupDataDisplay CreatureDisplay;
+
+    public GameObject ToolUI;
 
     public delegate void VoidEvent();
     public VoidEvent OnUpdate;
 
-    void Start()
+    private void Awake()
     {
         if (!INSTANCE)
         {
@@ -42,12 +44,15 @@ public class UIManager : MonoBehaviour
             Destroy(this);
             return;
         }
+    }
 
+    void Start()
+    {
         _ResourceInfos = new List<ParamInfo>();
         _InfoPanel.SetActive(false);
         _SpawnCreatureBtn.SetActive(false);
 
-        GroupDisplay.Deactivate();
+        CreatureDisplay.Deactivate();
     }
 
     private void Update()

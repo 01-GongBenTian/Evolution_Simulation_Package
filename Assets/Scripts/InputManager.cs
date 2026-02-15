@@ -39,8 +39,7 @@ public class InputManager : MonoBehaviour
 
     private InputMode _CurrentMode;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         if (!INSTANCE)
         {
@@ -51,8 +50,11 @@ public class InputManager : MonoBehaviour
             Destroy(this);
             return;
         }
+    }
 
-
+    // Start is called before the first frame update
+    void Start()
+    {
         _LeftMouse = _PlayerInput.actions.FindAction("LeftMouse");
         _RightMouse = _PlayerInput.actions.FindAction("RightMouse");
         _MouseDelta = _PlayerInput.actions.FindAction("MouseDelta");
@@ -111,16 +113,16 @@ public class InputManager : MonoBehaviour
             return;
         }
 
-        if (_RightMouse.IsPressed())
+        if (_RightMouse.WasPressedThisFrame())
         {
             _TrackingCreature = false;
-            UIManager.INSTANCE.GroupDisplay.Deactivate();
+            UIManager.INSTANCE.CreatureDisplay.Deactivate();
         }
 
-        if (_LeftMouse.IsPressed())
+        if (_LeftMouse.WasPressedThisFrame())
         {
             _TrackingCreature = true;
-            UIManager.INSTANCE.GroupDisplay.Activate(_CreatureSelected.GetComponent<CreatureGroup>());
+            UIManager.INSTANCE.CreatureDisplay.Activate(_CreatureSelected.GetComponent<CreatureGroup>());
         }
 
         if (!_TrackingCreature)
@@ -181,7 +183,7 @@ public class InputManager : MonoBehaviour
 
         if ((Within(Pos.x, 0, WorldMap.INSTANCE.Width) &&
             Within(Pos.y, 0, WorldMap.INSTANCE.Height)) &&
-            !_RightMouse.IsPressed() &&
+            !_RightMouse.WasPressedThisFrame() &&
             !UIManager.INSTANCE.IsInfoPanelShowing()
             )
         {
@@ -193,7 +195,7 @@ public class InputManager : MonoBehaviour
         }
 
         if (
-            _LeftMouse.IsPressed() &&
+            _LeftMouse.WasPressedThisFrame() &&
             !EventSystem.current.IsPointerOverGameObject() &&
             Within(Pos.x, 0, WorldMap.INSTANCE.Width) &&
             Within(Pos.y, 0, WorldMap.INSTANCE.Height))
@@ -266,9 +268,27 @@ public class InputManager : MonoBehaviour
             UpdateCameraBound();
         }
     }
-
     public void SetInputMode(int mode)
     {
         _CurrentMode = (InputMode)mode;
+
+        switch (_CurrentMode)
+        {
+            case InputMode.MAP:
+                {
+                    if (UIManager.INSTANCE.CreatureDisplay.isActiveAndEnabled)
+                        UIManager.INSTANCE.CreatureDisplay.Deactivate();
+
+                    break;
+                }
+            case InputMode.CREATURE:
+                {
+                    if (UIManager.INSTANCE.IsInfoPanelShowing())
+                        UIManager.INSTANCE.HideInfoPanel();
+
+                    break;
+                }
+        }
+
     }
 }

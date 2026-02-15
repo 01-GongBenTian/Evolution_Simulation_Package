@@ -25,6 +25,7 @@ public class ToggleExtend : MonoBehaviour
         if(_Toggle.isOn)
         {
             _Toggle.image.sprite = _OnSprite;
+
             OnToggleOn.Invoke();
         }
         else

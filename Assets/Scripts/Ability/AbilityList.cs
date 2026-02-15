@@ -9,7 +9,8 @@ public class AbilityList : ScriptableObject
     public enum ABILITIES
     {
         MITOSIS = 0,
-        FILTER_FEED,
+        MONOBLASTIC,
+        DIBLASTIC,
         NUM_OF_ABILITY
     }
 

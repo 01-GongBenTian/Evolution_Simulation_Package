@@ -43,4 +43,9 @@ public class Mitosis : Reproduction
             group.Creatures[creature] += (reproduceNum - newCreaturePopulation);
         }
     }
+
+    public override AbilityList.ABILITIES GetABILITIES()
+    {
+        return AbilityList.ABILITIES.MITOSIS;
+    }
 }

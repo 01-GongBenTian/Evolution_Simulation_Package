@@ -18,14 +18,16 @@ public class CreatureData
         HighestTemperatureAccept = 30,
         LowestTemperatureAccept = 24,
 
-        AbilityCarried = new List<ABILITIES>() { ABILITIES.MITOSIS, ABILITIES.FILTER_FEED },
+        AbilityCarried = new List<ABILITIES>() { ABILITIES.MITOSIS, ABILITIES.MONOBLASTIC },
 
         Attack = 1,
         Defenence = 1,
         Speed = 1,
 
         ResourceCarryNum = 1,
-        ReproduceEnergyRequired = 1
+        ReproduceEnergyRequired = 1,
+
+        CreatureColor = Color.black
     };
 
 
@@ -56,11 +58,101 @@ public class CreatureData
 
     public int ReproduceEnergyRequired;
 
+    public Color CreatureColor;
+
     public CreatureData Evolute()
     {
         CreatureData newData = new CreatureData();
         newData.Code = this.Code.Evolute();
+        CopyData(newData);
 
+        int lifespanWeight = (newData.Lifespan / 3);
+        int humidityWeight = (int)((1000 - newData.HumidityRequired) / 50) + 1;
+        int highestTemperatureWeight = (int)(((newData.HighestTemperatureAccept - DefaultCreature.HighestTemperatureAccept) / 0.5f) + 1);
+        int lowestTemperatureWeight = (int)(((DefaultCreature.LowestTemperatureAccept - newData.LowestTemperatureAccept) / 0.5f) + 1);
+        int speedWeight = (newData.Speed);
+        int resourceWeight = (newData.ResourceCarryNum);
+
+        int totalWeight = lifespanWeight + humidityWeight + highestTemperatureWeight + lowestTemperatureWeight + speedWeight + resourceWeight;
+        
+        int weight = 0;
+        int changeChance = Random.Range(0, totalWeight + 1);
+        if (changeChance < (weight += lifespanWeight))
+        {
+            int change = StatsValueChange(lifespanWeight);
+            newData.Lifespan += 3 * change;
+            lifespanWeight += change;
+            totalWeight += change;
+        }
+        else if (changeChance < (weight += humidityWeight))
+        {
+            int change = StatsValueChange(humidityWeight);
+            newData.HumidityRequired -= 50 * change;
+            humidityWeight += change;
+            totalWeight += change;
+        }
+        else if (changeChance < (weight += highestTemperatureWeight))
+        {
+            int change = StatsValueChange(highestTemperatureWeight);
+            newData.HighestTemperatureAccept += 0.75f * change;
+            highestTemperatureWeight += change;
+            totalWeight += change;
+        }
+        else if (changeChance < (weight += lowestTemperatureWeight))
+        {
+            int change = StatsValueChange(lowestTemperatureWeight);
+            newData.LowestTemperatureAccept -= 0.75f * change;
+            lowestTemperatureWeight += change;
+            totalWeight += change;
+        }
+        else if (changeChance < (weight += speedWeight))
+        {
+            int change = StatsValueChange(speedWeight);
+            newData.Speed += change;
+            speedWeight += change;
+            totalWeight += change;
+        }
+        else if (changeChance < (weight += resourceWeight))
+        {
+            int change = StatsValueChange(resourceWeight);
+            newData.ResourceCarryNum += change;
+            resourceWeight += change;
+            totalWeight += change;
+        }
+
+        newData.ReproduceEnergyCalulcation();
+
+
+        newData.CreatureColor = (Color.green * (lifespanWeight / (float)totalWeight)) +
+            (new Color(1, 0.5f, 0) * (humidityWeight / (float)totalWeight)) +
+            (Color.red * (highestTemperatureWeight / (float)totalWeight)) +
+            (Color.blue * (lowestTemperatureWeight / (float)totalWeight)) +
+            (Color.yellow * (speedWeight / (float)totalWeight)) +
+            (new Color(0.5f, 0, 0.5f) * (lowestTemperatureWeight / (float)totalWeight));
+
+        return newData;
+    }
+
+    private int StatsValueChange(float weight)
+    {
+        int valueChange = Random.Range(1, 10);
+        float positiveChance = ((1.0f / weight) * Mathf.Pow(1.03f, weight));
+        float random = Random.Range(0.0f, 1.0f);
+        
+        //negative
+        if(random > positiveChance)
+        {
+            valueChange = Mathf.Clamp(valueChange, int.MinValue, (int)(weight - 1));
+            return (int)(Mathf.Pow(weight - valueChange, 0.76f) - weight);
+        }
+        else //positive
+        {
+            return (int)(Mathf.Pow(weight + valueChange, 0.76f) - weight);
+        }
+    }
+
+    private void CopyData(CreatureData newData)
+    {
         newData.GroupMax = this.GroupMax;
         newData.GroupMin = this.GroupMin;
 
@@ -79,62 +171,6 @@ public class CreatureData
 
         newData.AbilityCarried = new List<ABILITIES>();
         newData.AbilityCarried.AddRange(this.AbilityCarried);
-
-        float lifespanWeight = (newData.Lifespan / 3);
-        float humidityWeight = (int)((1000 - newData.HumidityRequired) / 50) + 1;
-        float temperatureWeight = (int)((((newData.HighestTemperatureAccept - newData.LowestTemperatureAccept) - 6) / 0.25f) + 1);
-        float speedWeight = (newData.Speed);
-        float resourceWeight = (newData.ResourceCarryNum);
-
-        float totalWeight = lifespanWeight + humidityWeight + temperatureWeight + speedWeight + resourceWeight;
-        float weight = 0;
-
-        float changeChance = Random.Range(0.0f, 1.0f);
-        if (changeChance < (weight += lifespanWeight))
-        {
-            newData.Lifespan += 3 * StatsValueChange(lifespanWeight);
-        }
-        else if (changeChance < (weight += humidityWeight))
-        {
-            newData.HumidityRequired -= 50 * StatsValueChange(humidityWeight);
-        }
-        else if (changeChance < (weight += temperatureWeight))
-        {
-            int change = StatsValueChange(temperatureWeight);
-            newData.HighestTemperatureAccept += 0.125f * change;
-            newData.LowestTemperatureAccept -= 0.125f * change;
-        }
-        else if (changeChance < (weight += speedWeight))
-        {
-            newData.Speed += StatsValueChange(speedWeight);
-        }
-        else if (changeChance < (weight += resourceWeight))
-        {
-            newData.ResourceCarryNum += StatsValueChange(resourceWeight);
-        }
-
-
-        newData.ReproduceEnergyCalulcation();
-
-        return newData;
-    }
-
-    private int StatsValueChange(float weight)
-    {
-        int valueChange = Random.Range(1, 10);
-        float positiveChance = ((1.0f / weight) * Mathf.Pow(1.03f, weight));
-        float random = Random.Range(0.0f, 1.0f);
-        
-        //negative
-        if(random > positiveChance)
-        {
-            valueChange = Mathf.Clamp(valueChange, int.MinValue, (int)(weight - 1));
-            return (int)(Mathf.Pow(weight - valueChange, 0.6f) - weight);
-        }
-        else //positive
-        {
-            return (int)(Mathf.Pow(weight + valueChange, 0.6f) - weight);
-        }
     }
 
     private void ReproduceEnergyCalulcation()

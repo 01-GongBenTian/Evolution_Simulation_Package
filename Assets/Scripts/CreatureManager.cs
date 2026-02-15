@@ -18,10 +18,10 @@ public class CreatureManager : MonoBehaviour
     [Range(0, 1)]
     public float EvoluteChance;
 
-    [Range(1, 10)]
+    [Range(0.1f, 10)]
     public float TemperatureTolerance;
 
-    [Range(1, 200)]
+    [Range(0.1f, 200)]
     public float HumidityTolerance;
 
     [Range(0.5f, 1)]

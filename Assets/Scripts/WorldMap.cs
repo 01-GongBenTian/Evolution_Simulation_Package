@@ -14,16 +14,18 @@ public class WorldMap : MonoBehaviour
     public TilePalette BasePalette;
     public TilePalette DetailPalette;
 
-    public const int MIN_WIDTH_MAP = 30;
+    public const int MIN_WIDTH_MAP = 20;
     public const int MIN_HEIGHT_MAP = 10;
     public const int MAX_WIDTH_MAP = 150;
     public const int MAX_HEIGHT_MAP = 75;
 
     public Texture2D HeightMap;
 
-    public int Width = -1;
-    public int Height = -1;
-    public float RandomGenerateOffset;
+    [Range(MIN_WIDTH_MAP, MAX_WIDTH_MAP)]
+    public int Width;
+
+    [Range(MIN_HEIGHT_MAP, MAX_HEIGHT_MAP)]
+    public int Height;
 
 
     public List<List<Tiledata>> MapTiles;
@@ -43,13 +45,9 @@ public class WorldMap : MonoBehaviour
 
     public Bound TilemapBound;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        Base.ClearAllTiles();
-        Detail.ClearAllTiles();
-        UI.ClearAllTiles();
 
+    private void Awake()
+    {
         if (INSTANCE == null)
         {
             INSTANCE = this;
@@ -59,7 +57,14 @@ public class WorldMap : MonoBehaviour
             Destroy(this);
             return;
         }
+    }
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        Base.ClearAllTiles();
+        Detail.ClearAllTiles();
+        UI.ClearAllTiles();
 
         CheckMapSize();
         GenerateMap();
@@ -82,7 +87,7 @@ public class WorldMap : MonoBehaviour
         {
             Width = MIN_WIDTH_MAP;
         }
-        else if (Width > MIN_WIDTH_MAP)
+        else if (Width > MAX_WIDTH_MAP)
         {
             Width = MAX_WIDTH_MAP;
         }
@@ -94,16 +99,6 @@ public class WorldMap : MonoBehaviour
         else if (Height > MAX_HEIGHT_MAP)
         {
             Height = MAX_HEIGHT_MAP;
-        }
-
-        if (Width > HeightMap.width)
-        {
-            Width = HeightMap.width;
-        }
-        
-        if (Height > HeightMap.height)
-        {
-            Height = HeightMap.height;
         }
     }
 
@@ -139,14 +134,7 @@ public class WorldMap : MonoBehaviour
 
     private float CalculateAltitude(float x, float y)
     {
-        if (!HeightMap)
-        {
-            return Mathf.PerlinNoise((x / Width) + Random.Range(-RandomGenerateOffset, RandomGenerateOffset), (y / Height) + Random.Range(-RandomGenerateOffset, RandomGenerateOffset)) + 0.12f;
-        }
-        else
-        {
-            return HeightMap.GetPixel((int)(HeightMap.width * (x / Width)), (int)(HeightMap.height * (y / Height))).r;
-        }
+        return HeightMap.GetPixel((int)(HeightMap.width * (x / Width)), (int)(HeightMap.height * (y / Height))).r;
     }
 
     private float CalculateHumiditiy(int x, int y)
@@ -412,15 +400,13 @@ public class WorldMap : MonoBehaviour
             for(int y = 0; y < Height; ++y)
             {
                 //resources flow
-                ResourceFlow(x, y);
+                ResourceFlow(x, y, 0);
+                ResourceFlow(x, y, 1);
 
                 //resources combination
                 ResourceCombination(x, y);
             }
         }
-
-
-
     }
 
     public void ResourceCombination(int x, int y)
@@ -434,7 +420,7 @@ public class WorldMap : MonoBehaviour
 
         List<Resource> minerals = ResourceList.GetInstance().GetResources(Categories.MINERAL);
         int combineToNextLevel = 0;
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 1; ++i)
         {
             if (!tile.ResourceList.ContainsKey(minerals[i]))
                 continue;
@@ -450,11 +436,11 @@ public class WorldMap : MonoBehaviour
     }
 
 
-    public void ResourceFlow(int x, int y)
+    public void ResourceFlow(int x, int y, int level)
     {
         List<Resource> minerals = ResourceList.GetInstance().GetResources(Categories.MINERAL);
         
-        if (!MapTiles[x][y].ResourceList.ContainsKey(minerals[0]))
+        if (!MapTiles[x][y].ResourceList.ContainsKey(minerals[level]))
             return; ;
 
         int totalValue = 0;
@@ -474,7 +460,7 @@ public class WorldMap : MonoBehaviour
                 if ((y + ii) < 0 || (y + ii) >= Height)
                     continue;
 
-                if (!MapTiles[x + i][y + ii].ResourceList.ContainsKey(minerals[0]))
+                if (!MapTiles[x + i][y + ii].ResourceList.ContainsKey(minerals[level]))
                     continue;
 
                 //calculate the target ratio base on altitude
@@ -487,10 +473,10 @@ public class WorldMap : MonoBehaviour
                 targetRatio = Mathf.Clamp(targetRatio, 1.0f, 5.0f);
 
                 //calculate old ratio
-                if (MapTiles[x + i][y + ii].ResourceList[minerals[0]] == 0)
-                    oldRatio = (float)MapTiles[x][y].ResourceList[minerals[0]];
+                if (MapTiles[x + i][y + ii].ResourceList[minerals[level]] == 0)
+                    oldRatio = (float)MapTiles[x][y].ResourceList[minerals[level]];
                 else
-                    oldRatio = (float)MapTiles[x][y].ResourceList[minerals[0]] / (float)MapTiles[x + i][y + ii].ResourceList[minerals[0]];
+                    oldRatio = (float)MapTiles[x][y].ResourceList[minerals[level]] / (float)MapTiles[x + i][y + ii].ResourceList[minerals[level]];
 
                 if (oldRatio < targetRatio && !Mathf.Approximately(targetRatio,1.0f))
                     continue;
@@ -498,11 +484,11 @@ public class WorldMap : MonoBehaviour
                 newRatio = Mathf.Lerp(oldRatio, 1.0f / targetRatio, Time.deltaTime);
                 
                 totalUnit = (1.0f / newRatio) + 1;
-                totalValue = MapTiles[x][y].ResourceList[minerals[0]] + MapTiles[x + i][y + ii].ResourceList[minerals[0]];
+                totalValue = MapTiles[x][y].ResourceList[minerals[level]] + MapTiles[x + i][y + ii].ResourceList[minerals[level]];
 
-                flowAmount = MapTiles[x][y].ResourceList[minerals[0]] - (int)(totalValue / totalUnit);
-                MapTiles[x][y].ResourceList[minerals[0]] -= flowAmount;
-                MapTiles[x + i][y + ii].ResourceList[minerals[0]] += flowAmount;
+                flowAmount = MapTiles[x][y].ResourceList[minerals[level]] - (int)(totalValue / totalUnit);
+                MapTiles[x][y].ResourceList[minerals[level]] -= flowAmount;
+                MapTiles[x + i][y + ii].ResourceList[minerals[level]] += flowAmount;
             }
         }
     }

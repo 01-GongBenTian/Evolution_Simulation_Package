@@ -15,16 +15,32 @@ public abstract class Digestion : Ability
     }
 }
 
-public class FilterFeedCountDown
+public class MonoblastCountDown
 {
-    public static List<FilterFeedCountDown> List = new List<FilterFeedCountDown>();
+    public static List<MonoblastCountDown> List = new List<MonoblastCountDown>();
 
     public CreatureGroup Group;
     public byte CountDown;
 
-    public FilterFeedCountDown(CreatureGroup group)
+    public MonoblastCountDown(CreatureGroup group)
     {
         Group = group;
         CountDown = 1;
     }
 }
+
+
+public class DiblasticCountDown
+{
+    public static List<DiblasticCountDown> List = new List<DiblasticCountDown>();
+
+    public CreatureGroup Group;
+    public bool NextConsume;
+
+    public DiblasticCountDown(CreatureGroup group)
+    {
+        Group = group;
+        NextConsume = false;
+    }
+}
+

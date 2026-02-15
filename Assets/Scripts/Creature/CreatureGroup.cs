@@ -46,6 +46,9 @@ public class CreatureGroup : MonoBehaviour
 
     [SerializeField] private Bar _PopulationBar;
 
+    public delegate void Event();
+    public Event OnLeaderChanged;
+
     public void OnConsumeResources()
     {
         LeaderCreature.GetDigestionAbility().Execute(this, null, null);
@@ -61,7 +64,6 @@ public class CreatureGroup : MonoBehaviour
             transform.DOMove(transform.position + (direction * LeaderCreature.Speed * Time.deltaTime * Mathf.Clamp(Energy / energyUsed, 0, 1)), SystemManager.INSTANCE.TimerCount).OnComplete(() => { MapPosition = WorldMap.INSTANCE.Base.WorldToCell(transform.position) / 2; });
             Energy -= energyUsed;
         }
-
 
         //combat
 
@@ -89,6 +91,13 @@ public class CreatureGroup : MonoBehaviour
         //if this creature group all die
         if(Creatures.Count == 0)
         {
+            foreach(var resource in ResourcesCarried)
+            {
+                if (!WorldMap.INSTANCE.MapTiles[MapPosition.x][MapPosition.y].ResourceList.ContainsKey(resource.Key))
+                    WorldMap.INSTANCE.MapTiles[MapPosition.x][MapPosition.y].ResourceList.Add(resource.Key, 0);
+
+                WorldMap.INSTANCE.MapTiles[MapPosition.x][MapPosition.y].ResourceList[resource.Key] += resource.Value;
+            }
             CreatureManager.INSTANCE.RemoveCreatureGroup(Index);
         }
     }
@@ -221,11 +230,17 @@ public class CreatureGroup : MonoBehaviour
 
     public void UpdateLeader()
     {
-        KeyValuePair<CreatureData, int>[] kvps = Creatures.OrderBy(kvp => kvp.Value).ToArray();
         KeyValuePair<CreatureData, int> largestPopulation = Creatures.OrderByDescending(kvp => kvp.Value).First();
-        LeaderCreature = largestPopulation.Key;
 
-        Sprite.color = LeaderCreature.Code.GetCodeColor();
+        if (LeaderCreature != largestPopulation.Key)
+        {
+            LeaderCreature = largestPopulation.Key;
+
+            if (OnLeaderChanged != null)
+                OnLeaderChanged.Invoke();
+        }
+
+        Sprite.material.SetColor("_Color", LeaderCreature.CreatureColor);
     }
 
     public void AddInCreature(CreatureData creature, int num)
@@ -291,14 +306,14 @@ public class CreatureGroup : MonoBehaviour
             _Status |= Status.HOT;
             _Status &= ~Status.COLD;
 
-            multipler *= Mathf.Clamp(((temperature - creature.HighestTemperatureAccept) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
+            multipler *= ((temperature - creature.HighestTemperatureAccept) / CreatureManager.INSTANCE.TemperatureTolerance);
         }
         else if (temperature < creature.LowestTemperatureAccept)
         {
             _Status |= Status.COLD;
             _Status &= ~Status.HOT;
 
-            multipler *= Mathf.Clamp(((creature.LowestTemperatureAccept - temperature) / CreatureManager.INSTANCE.TemperatureTolerance), 1.0f, 3.0f);
+            multipler *= ((creature.LowestTemperatureAccept - temperature) / CreatureManager.INSTANCE.TemperatureTolerance);
         }
         else
         {
@@ -310,7 +325,7 @@ public class CreatureGroup : MonoBehaviour
         {
             _Status |= Status.DRY;
 
-            multipler *= Mathf.Clamp(((creature.HumidityRequired - humidity) / CreatureManager.INSTANCE.HumidityTolerance), 1.0f, 3.0f);
+            multipler *= ((creature.HumidityRequired - humidity) / CreatureManager.INSTANCE.HumidityTolerance);
         }
         else
         {
@@ -387,7 +402,7 @@ public class CreatureGroup : MonoBehaviour
                 weights[x + 1][y + 1] = weight;
             }
         }
-        weights[0][0] *= Mathf.Pow(Creatures.Sum(kvp => kvp.Value), 0.08f);
+        weights[1][1] *= Mathf.Pow(Creatures.Sum(i => i.Value), 0.12f);
 
         int highestX = 0;
         int highestY = 0;
